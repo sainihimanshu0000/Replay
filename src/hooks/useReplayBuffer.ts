@@ -33,7 +33,7 @@ export const useReplayBuffer = () => {
     try {
       const recordings = await ReplayBuffer.getSavedReplays();
       setSavedReplays(recordings);
-    } catch (err) {
+    } catch {
       // ignore errors from listing saved files
     }
   }, []);

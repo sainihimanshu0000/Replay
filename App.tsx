@@ -5,7 +5,6 @@
 import { useState } from 'react';
 import {
   StatusBar,
-  useColorScheme,
   View,
   Text,
   TouchableOpacity,
@@ -14,68 +13,138 @@ import {
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ReplayScreen } from './src/screens/ReplayScreen';
 import { RecordingsScreen } from './src/screens/RecordingsScreen';
+import { SettingsScreen } from './src/screens/SettingsScreen';
 import { useReplayBuffer } from './src/hooks/useReplayBuffer';
 
 function App() {
-  const isDarkMode = useColorScheme() === 'dark';
-  const [activeTab, setActiveTab] = useState<'recorder' | 'recordings'>('recorder');
+  const [activeTab, setActiveTab] = useState<
+    'dashcam' | 'recordings' | 'settings'
+  >('dashcam');
+
   const replayState = useReplayBuffer();
 
   return (
     <SafeAreaProvider>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <View style={styles.tabBar}>
-        <TouchableOpacity
-          style={[styles.tabButton, activeTab === 'recorder' && styles.tabButtonActive]}
-          onPress={() => setActiveTab('recorder')}
-        >
-          <Text style={[styles.tabText, activeTab === 'recorder' && styles.tabTextActive]}>
-            Recorder
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.tabButton, activeTab === 'recordings' && styles.tabButtonActive]}
-          onPress={() => setActiveTab('recordings')}
-        >
-          <Text style={[styles.tabText, activeTab === 'recordings' && styles.tabTextActive]}>
-            Recordings
-          </Text>
-        </TouchableOpacity>
+      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+
+      <View style={styles.container}>
+        {/* Main Content */}
+        <View style={styles.content}>
+          {activeTab === 'dashcam' ? (
+            <ReplayScreen {...replayState} />
+          ) : activeTab === 'recordings' ? (
+            <RecordingsScreen {...replayState} />
+          ) : (
+            <SettingsScreen {...replayState} />
+          )}
+        </View>
+
+        {/* Bottom Tab Bar */}
+        <View style={styles.tabBar}>
+          <NavButton
+            label="Dashcam"
+            active={activeTab === 'dashcam'}
+            onPress={() => setActiveTab('dashcam')}
+          />
+          <NavButton
+            label="Replays"
+            active={activeTab === 'recordings'}
+            onPress={() => setActiveTab('recordings')}
+          />
+          <NavButton
+            label="Settings"
+            active={activeTab === 'settings'}
+            onPress={() => setActiveTab('settings')}
+          />
+        </View>
       </View>
-      {activeTab === 'recorder' ? (
-        <ReplayScreen {...replayState} />
-      ) : (
-        <RecordingsScreen {...replayState} />
-      )}
     </SafeAreaProvider>
   );
 }
 
+/* ✅ Cleaner Nav Button */
+const NavButton = ({
+  label,
+  active,
+  onPress,
+}: {
+  label: string;
+  active: boolean;
+  onPress: () => void;
+}) => (
+  <TouchableOpacity
+    style={[styles.tabButton, active && styles.tabButtonActive]}
+    onPress={onPress}
+    activeOpacity={0.8}
+  >
+    {active && <View style={styles.activeIndicator} />}
+
+    <Text
+      style={[styles.tabText, active && styles.activeText]}
+    >
+      {label}
+    </Text>
+  </TouchableOpacity>
+);
+
 const styles = StyleSheet.create({
-  tabBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingVertical: 10,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e6e6e6',
+  container: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
   },
-  tabButton: {
-    paddingHorizontal: 24,
-    paddingVertical: 8,
-    borderRadius: 24,
+
+  content: {
+    flex: 1,
   },
-  tabButtonActive: {
-    backgroundColor: '#007AFF',
-  },
-  tabText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-  },
-  tabTextActive: {
-    color: '#fff',
-  },
+
+ tabBar: {
+  flexDirection: 'row',
+  margin: 12,
+  borderRadius: 18,
+  backgroundColor: '#FFFFFF',
+  paddingVertical: 8,
+  paddingHorizontal: 6,
+
+  // iOS shadow
+  shadowColor: '#000',
+  shadowOpacity: 0.08,
+  shadowRadius: 10,
+  shadowOffset: { width: 0, height: 4 },
+
+  // Android shadow
+  elevation: 6,
+},
+
+tabButton: {
+  flex: 1,
+  alignItems: 'center',
+  justifyContent: 'center',
+  paddingVertical: 8,
+  borderRadius: 12,
+},
+
+tabButtonActive: {
+  backgroundColor: '#EFF6FF',
+},
+
+tabText: {
+  fontSize: 13,
+  fontWeight: '700',
+  color: '#9CA3AF',
+},
+
+activeText: {
+  color: '#2563EB',
+},
+
+activeIndicator: {
+  position: 'absolute',
+  top: 4,
+  width: 20,
+  height: 3,
+  borderRadius: 10,
+  backgroundColor: '#2563EB',
+},
 });
 
 export default App;
